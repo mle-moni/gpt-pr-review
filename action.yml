@@ -4,10 +4,9 @@ author: 'Galadrim'
 
 # Define your inputs here.
 inputs:
-  milliseconds:
-    description: 'Your input description here'
+  github-token:
     required: true
-    default: '1000'
+    description: 'Github token'
 
 runs:
   using: node20

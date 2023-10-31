@@ -29898,10 +29898,23 @@ async function run() {
     try {
         // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
         core.debug(`Starting action...`);
+        // Fetching github token and getting octokit client
+        const githubToken = core.getInput('github-token');
+        const octokit = github.getOctokit(githubToken);
         // Get the context
-        const context = github.context.issue;
-        // Set outputs for other workflow steps to use
-        console.log('My context : ', context);
+        const { owner, repo, number } = github.context.issue;
+        console.log('owner: ' + owner);
+        console.log('repo: ' + repo);
+        console.log('number: ' + number);
+        // Get PR content
+        const { data: prData } = await octokit.rest.pulls.get({
+            owner,
+            repo,
+            pull_number: number
+        });
+        console.log('prData: ' + prData);
+        const prContent = prData.body;
+        console.log(`PR Content: ${prContent}`);
     }
     catch (error) {
         // Fail the workflow run if an error occurs
