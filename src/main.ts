@@ -28,7 +28,6 @@ export async function run(): Promise<void> {
     })
 
     for (const file of files) {
-      const filePath = file.filename
       const patch = file.patch
 
       // Send the patch data to ChatGPT for review
@@ -53,9 +52,7 @@ export async function run(): Promise<void> {
 
         console.log('gptResponse', gptResponse.choices[0].message.content)
       } catch (err) {
-        if (axios.isAxiosError(error)) {
-          console.log('error', error.response?.data)
-        }
+        console.log(err)
       }
     }
   } catch (error) {

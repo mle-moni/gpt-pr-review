@@ -33354,7 +33354,6 @@ exports.run = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const axios_1 = __importDefault(__nccwpck_require__(8757));
-const console_1 = __nccwpck_require__(6206);
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
@@ -33376,7 +33375,6 @@ async function run() {
             pull_number: number
         });
         for (const file of files) {
-            const filePath = file.filename;
             const patch = file.patch;
             // Send the patch data to ChatGPT for review
             try {
@@ -33396,9 +33394,7 @@ async function run() {
                 console.log('gptResponse', gptResponse.choices[0].message.content);
             }
             catch (err) {
-                if (axios_1.default.isAxiosError(console_1.error)) {
-                    console.log('error', console_1.error.response?.data);
-                }
+                console.log(err);
             }
         }
     }
