@@ -29918,9 +29918,9 @@ async function run() {
                 repo,
                 file_sha: sha
             });
-            console.log('fileContent', fileContent);
             // Decode the content from base64
             const decodedContent = Buffer.from(fileContent.content, 'base64').toString('utf8');
+            console.log(decodedContent);
             console.log(`File Path: ${filePath}`);
             console.log(`File Content: ${decodedContent}`);
         }
