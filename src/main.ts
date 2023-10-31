@@ -26,23 +26,10 @@ export async function run(): Promise<void> {
 
     for (const file of files) {
       const filePath = file.filename
-      const sha = file.sha
+      const patch = file.patch
 
-      // Get the file content
-      const { data: fileContent } = await octokit.rest.git.getBlob({
-        owner,
-        repo,
-        file_sha: sha
-      })
-
-      // Decode the content from base64
-      const decodedContent = Buffer.from(
-        fileContent.content,
-        'base64'
-      ).toString('utf8')
-      console.log(decodedContent)
       console.log(`File Path: ${filePath}`)
-      console.log(`File Content: ${decodedContent}`)
+      console.log(`Modifications:\n${patch}`)
     }
   } catch (error) {
     // Fail the workflow run if an error occurs
