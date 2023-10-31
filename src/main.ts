@@ -26,7 +26,7 @@ export async function run(): Promise<void> {
       repo,
       pull_number: number
     })
-    console.log('prData: ' + prData)
+    console.log('prData: ', JSON.stringify(prData))
 
     const prContent = prData.body
 

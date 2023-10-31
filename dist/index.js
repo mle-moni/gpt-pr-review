@@ -29912,7 +29912,7 @@ async function run() {
             repo,
             pull_number: number
         });
-        console.log('prData: ' + prData);
+        console.log('prData: ', JSON.stringify(prData));
         const prContent = prData.body;
         console.log(`PR Content: ${prContent}`);
     }
