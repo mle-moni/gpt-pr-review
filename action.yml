@@ -1,6 +1,6 @@
-name: 'The name of your action here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'GPT PR Reviewer'
+description: 'Review PR and suggest comments, improvments, using ChatGPT'
+author: 'Galadrim'
 
 # Define your inputs here.
 inputs:
