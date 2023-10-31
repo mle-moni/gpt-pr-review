@@ -33391,9 +33391,7 @@ async function run() {
                     Authorization: `Bearer ${gptApiKey}`
                 }
             });
-            console.log(`File Path: ${filePath}`);
-            console.log(`Modifications:\n${patch}`);
-            console.log('gptResponse', gptResponse);
+            console.log('gptResponse', gptResponse.choices[0].message.content);
         }
     }
     catch (error) {

@@ -49,9 +49,7 @@ export async function run(): Promise<void> {
         }
       )
 
-      console.log(`File Path: ${filePath}`)
-      console.log(`Modifications:\n${patch}`)
-      console.log('gptResponse', gptResponse)
+      console.log('gptResponse', gptResponse.choices[0].message.content)
     }
   } catch (error) {
     // Fail the workflow run if an error occurs
