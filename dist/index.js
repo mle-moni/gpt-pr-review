@@ -29903,18 +29903,27 @@ async function run() {
         const octokit = github.getOctokit(githubToken);
         // Get the context
         const { owner, repo, number } = github.context.issue;
-        console.log('owner: ' + owner);
-        console.log('repo: ' + repo);
-        console.log('number: ' + number);
-        // Get PR content
-        const { data: prData } = await octokit.rest.pulls.get({
+        // Get PR files modified
+        const { data: files } = await octokit.rest.pulls.listFiles({
             owner,
             repo,
             pull_number: number
         });
-        console.log('prData: ', JSON.stringify(prData));
-        const prContent = prData.body;
-        console.log(`PR Content: ${prContent}`);
+        for (const file of files) {
+            const filePath = file.filename;
+            const sha = file.sha;
+            // Get the file content
+            const { data: fileContent } = await octokit.rest.git.getBlob({
+                owner,
+                repo,
+                file_sha: sha
+            });
+            console.log('fileContent', fileContent);
+            // Decode the content from base64
+            const decodedContent = Buffer.from(fileContent.content, 'base64').toString('utf8');
+            console.log(`File Path: ${filePath}`);
+            console.log(`File Content: ${decodedContent}`);
+        }
     }
     catch (error) {
         // Fail the workflow run if an error occurs
