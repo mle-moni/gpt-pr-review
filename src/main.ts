@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
+import axios from 'axios'
 
 /**
  * The main function for the action.
@@ -12,6 +13,7 @@ export async function run(): Promise<void> {
 
     // Fetching github token and getting octokit client
     const githubToken = core.getInput('github-token')
+    const gptApiKey = core.getInput('gpt-api-key')
     const octokit = github.getOctokit(githubToken)
 
     // Get the context
@@ -28,8 +30,28 @@ export async function run(): Promise<void> {
       const filePath = file.filename
       const patch = file.patch
 
+      // Send the patch data to ChatGPT for review
+      const { data: gptResponse } = await axios.post(
+        'https://api.openai.com/v1/chat/completions',
+        {
+          model: 'gpt-3.5-turbo',
+          messages: [
+            {
+              role: 'user',
+              content: `Keep in mind that you are here to help a lead developper revieweing a pull request from a developer. You don't have to provide comments if the code is fine. Review the following code and provide brief comments :\n${patch}`
+            }
+          ]
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${gptApiKey}`
+          }
+        }
+      )
+
       console.log(`File Path: ${filePath}`)
       console.log(`Modifications:\n${patch}`)
+      console.log('gptResponse', gptResponse)
     }
   } catch (error) {
     // Fail the workflow run if an error occurs

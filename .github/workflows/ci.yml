@@ -50,3 +50,4 @@ jobs:
         uses: ./
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          gpt-api-key: ${{ secrets.GPT_API_KEY }}

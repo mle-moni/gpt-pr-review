@@ -7,6 +7,9 @@ inputs:
   github-token:
     required: true
     description: 'Github token'
+  gpt-api-key:
+    required: true
+    description: 'OpenAI GPT API key'
 
 runs:
   using: node20
