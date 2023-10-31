@@ -20,6 +20,14 @@ export async function run(): Promise<void> {
     // Get the context
     const { owner, repo, number } = github.context.issue
 
+    const { data: pr } = await octokit.rest.pulls.get({
+      owner,
+      repo,
+      pull_number: number
+    })
+
+    const commitId = pr.head.sha
+
     // Get PR files modified
     const { data: files } = await octokit.rest.pulls.listFiles({
       owner,
@@ -61,8 +69,8 @@ export async function run(): Promise<void> {
             pull_number: number,
             body: review,
             path: filePath,
-            commit_id: file.sha,
-            position: 1 // This needs to be a valid position in the diff
+            commit_id: commitId,
+            position: 1
           })
         } catch (err) {
           console.log(err)
