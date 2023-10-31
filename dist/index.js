@@ -33375,26 +33375,43 @@ async function run() {
             pull_number: number
         });
         for (const file of files) {
+            const filePath = file.filename;
             const patch = file.patch;
+            const numberOfCharacters = patch?.length || 0;
             // Send the patch data to ChatGPT for review
-            try {
-                const { data: gptResponse } = await axios_1.default.post('https://api.openai.com/v1/chat/completions', {
-                    model: 'gpt-3.5-turbo',
-                    messages: [
-                        {
-                            role: 'user',
-                            content: `Keep in mind that you are here to help a lead developper revieweing a pull request from a developer. You don't have to provide comments if the code is fine. Review the following code and provide brief comments :\n${patch}`
+            if (numberOfCharacters < 4096) {
+                try {
+                    const { data: gptResponse } = await axios_1.default.post('https://api.openai.com/v1/chat/completions', {
+                        model: 'gpt-3.5-turbo',
+                        messages: [
+                            {
+                                role: 'user',
+                                content: `Keep in mind that you are here to help a lead developper revieweing a pull request from a developer. You don't have to provide comments if the code is fine. Review the following code and provide brief comments :\n${patch}`
+                            }
+                        ]
+                    }, {
+                        headers: {
+                            Authorization: `Bearer ${gptApiKey}`
                         }
-                    ]
-                }, {
-                    headers: {
-                        Authorization: `Bearer ${gptApiKey}`
-                    }
-                });
-                console.log('gptResponse', gptResponse.choices[0].message.content);
+                    });
+                    const review = gptResponse.choices[0].message.content;
+                    // Comment PR with GPT response
+                    await octokit.rest.pulls.createReviewComment({
+                        owner,
+                        repo,
+                        pull_number: number,
+                        body: review,
+                        path: filePath,
+                        commit_id: file.sha,
+                        position: 1 // This needs to be a valid position in the diff
+                    });
+                }
+                catch (err) {
+                    console.log(err);
+                }
             }
-            catch (err) {
-                console.log(err);
+            else {
+                console.log('File is too large.');
             }
         }
     }
