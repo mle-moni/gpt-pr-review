@@ -1,6 +1,7 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import axios from 'axios'
+import { error } from 'console'
 
 /**
  * The main function for the action.
@@ -31,25 +32,31 @@ export async function run(): Promise<void> {
       const patch = file.patch
 
       // Send the patch data to ChatGPT for review
-      const { data: gptResponse } = await axios.post(
-        'https://api.openai.com/v1/chat/completions',
-        {
-          model: 'gpt-3.5-turbo',
-          messages: [
-            {
-              role: 'user',
-              content: `Keep in mind that you are here to help a lead developper revieweing a pull request from a developer. You don't have to provide comments if the code is fine. Review the following code and provide brief comments :\n${patch}`
+      try {
+        const { data: gptResponse } = await axios.post(
+          'https://api.openai.com/v1/chat/completions',
+          {
+            model: 'gpt-3.5-turbo',
+            messages: [
+              {
+                role: 'user',
+                content: `Keep in mind that you are here to help a lead developper revieweing a pull request from a developer. You don't have to provide comments if the code is fine. Review the following code and provide brief comments :\n${patch}`
+              }
+            ]
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${gptApiKey}`
             }
-          ]
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${gptApiKey}`
           }
-        }
-      )
+        )
 
-      console.log('gptResponse', gptResponse.choices[0].message.content)
+        console.log('gptResponse', gptResponse.choices[0].message.content)
+      } catch (err) {
+        if (axios.isAxiosError(error)) {
+          console.log('error', error.response?.data)
+        }
+      }
     }
   } catch (error) {
     // Fail the workflow run if an error occurs
