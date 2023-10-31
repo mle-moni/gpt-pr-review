@@ -29901,7 +29901,7 @@ async function run() {
         // Get the context
         const context = github.context.issue;
         // Set outputs for other workflow steps to use
-        core.setOutput('context : ', context);
+        console.log('My context : ', context);
     }
     catch (error) {
         // Fail the workflow run if an error occurs

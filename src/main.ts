@@ -14,7 +14,7 @@ export async function run(): Promise<void> {
     const context = github.context.issue
 
     // Set outputs for other workflow steps to use
-    core.setOutput('context : ', context)
+    console.log('My context : ', context)
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)
