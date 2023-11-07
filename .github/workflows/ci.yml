@@ -21,7 +21,7 @@ jobs:
         id: setup-node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: npm
 
       - name: Install Dependencies
@@ -31,10 +31,6 @@ jobs:
       - name: Check Format
         id: npm-format-check
         run: npm run format:check
-
-      - name: Lint
-        id: npm-lint
-        run: npm run lint
 
       - name: Test
         id: npm-ci-test
@@ -53,8 +49,5 @@ jobs:
         id: test-action
         uses: ./
         with:
-          milliseconds: 1000
-
-      - name: Print Output
-        id: output
-        run: echo "${{ steps.test-action.outputs.time }}"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gpt-api-key: ${{ secrets.GPT_API_KEY }}
