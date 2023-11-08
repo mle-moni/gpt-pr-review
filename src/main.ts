@@ -50,7 +50,11 @@ export async function run(): Promise<void> {
               messages: [
                 {
                   role: 'user',
-                  content: `Keep in mind that you are here to help a lead developper revieweing a pull request from a developer. You don't have to provide comments if the code is fine. Review the following code and provide brief comments :\n${patch}`
+                  content: `Keep in mind that you are here to help a lead developper revieweing a pull request from a developer. 
+                  You don't have to provide comments if the code is fine. Just answer with the word : "Null". 
+                  Pay attention to syntax error, code improvment, code style, code logic, code security, code performance, code readability, code maintainability, code scalability, code reusability, code extensibility, code complexity, code best practice, code convention, code standard, code quality.
+                  Review the following code and provide comments :
+                  ${patch}`
                 }
               ]
             },
@@ -62,16 +66,18 @@ export async function run(): Promise<void> {
           )
           const review = gptResponse.choices[0].message.content
 
-          // Comment PR with GPT response
-          await octokit.rest.pulls.createReviewComment({
-            owner,
-            repo,
-            pull_number: number,
-            body: review,
-            path: filePath,
-            commit_id: commitId,
-            position: 1
-          })
+          if (review !== 'Null') {
+            // Comment PR with GPT response
+            await octokit.rest.pulls.createReviewComment({
+              owner,
+              repo,
+              pull_number: number,
+              body: review,
+              path: filePath,
+              commit_id: commitId,
+              position: 1
+            })
+          }
         } catch (err) {
           console.log(err)
         }

@@ -2,10 +2,10 @@ name: Continuous Integration
 
 on:
   pull_request:
-  push:
-    branches:
-      - main
-      - 'releases/*'
+  # push:
+  #   branches:
+  #     - main
+  #     - 'releases/*'
 
 jobs:
   test-typescript:
