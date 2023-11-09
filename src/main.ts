@@ -42,6 +42,7 @@ export async function run(): Promise<void> {
       const numberOfCharacters = patch?.length || 0
       const fileSizeLimit = 8192 - baseContent.length
       // Send the patch data to ChatGPT for review
+      console.log('baseContent, patch', baseContent, patch)
       if (numberOfCharacters < fileSizeLimit) {
         try {
           const { data: gptResponse } = await axios.post(
