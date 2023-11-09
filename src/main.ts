@@ -2,6 +2,7 @@ import * as core from '@actions/core'
 import * as github from '@actions/github'
 import axios from 'axios'
 import { error } from 'console'
+import { baseContent } from './utils'
 
 /**
  * The main function for the action.
@@ -39,22 +40,19 @@ export async function run(): Promise<void> {
       const filePath = file.filename
       const patch = file.patch
       const numberOfCharacters = patch?.length || 0
-
+      const contextLength = baseContent.length
+      const fileSizeLimit = 8192 - contextLength
       // Send the patch data to ChatGPT for review
-      if (numberOfCharacters < 4096) {
+      if (numberOfCharacters < fileSizeLimit) {
         try {
           const { data: gptResponse } = await axios.post(
             'https://api.openai.com/v1/chat/completions',
             {
-              model: 'gpt-3.5-turbo',
+              model: 'gpt-4',
               messages: [
                 {
                   role: 'user',
-                  content: `Keep in mind that you are here to help a lead developper revieweing a pull request from a developer. 
-                  You don't have to provide comments if the code is fine. Just answer with the word : "Null". 
-                  Pay attention to syntax error, code improvment, code style, code logic, code security, code performance, code readability, code maintainability, code scalability, code reusability, code extensibility, code complexity, code best practice, code convention, code standard, code quality.
-                  Review the following code and provide comments :
-                  ${patch}`
+                  content: `${baseContent}${patch}`
                 }
               ]
             },
