@@ -63,7 +63,7 @@ export async function run(): Promise<void> {
           )
           const review = gptResponse.choices[0].message.content
 
-          if (review !== 'Null') {
+          if (review !== 'No comment') {
             // Comment PR with GPT response
             await octokit.rest.pulls.createReviewComment({
               owner,
