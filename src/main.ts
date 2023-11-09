@@ -40,8 +40,7 @@ export async function run(): Promise<void> {
       const filePath = file.filename
       const patch = file.patch
       const numberOfCharacters = patch?.length || 0
-      const contextLength = baseContent.length
-      const fileSizeLimit = 8192 - contextLength
+      const fileSizeLimit = 8192 - baseContent.length
       // Send the patch data to ChatGPT for review
       if (numberOfCharacters < fileSizeLimit) {
         try {
