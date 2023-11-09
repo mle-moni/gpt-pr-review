@@ -40,9 +40,9 @@ export async function run(): Promise<void> {
       const filePath = file.filename
       const patch = file.patch
       const numberOfCharacters = patch?.length || 0
-      const contextLength = baseContent.length
-      const fileSizeLimit = 8192 - contextLength
+      const fileSizeLimit = 8192 - baseContent.length
       // Send the patch data to ChatGPT for review
+      console.log('baseContent, patch', baseContent, patch)
       if (numberOfCharacters < fileSizeLimit) {
         try {
           const { data: gptResponse } = await axios.post(
@@ -64,7 +64,7 @@ export async function run(): Promise<void> {
           )
           const review = gptResponse.choices[0].message.content
 
-          if (review !== 'Null') {
+          if (review !== 'No comment') {
             // Comment PR with GPT response
             await octokit.rest.pulls.createReviewComment({
               owner,
