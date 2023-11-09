@@ -48,7 +48,7 @@ export async function run(): Promise<void> {
           const { data: gptResponse } = await axios.post(
             'https://api.openai.com/v1/chat/completions',
             {
-              model: 'gpt-4-1106-preview',
+              model: 'gpt-4',
               messages: [
                 {
                   role: 'user',

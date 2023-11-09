@@ -33354,6 +33354,7 @@ exports.run = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const axios_1 = __importDefault(__nccwpck_require__(8757));
+const utils_1 = __nccwpck_require__(1314);
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
@@ -33384,15 +33385,17 @@ async function run() {
             const filePath = file.filename;
             const patch = file.patch;
             const numberOfCharacters = patch?.length || 0;
+            const fileSizeLimit = 8192 - utils_1.baseContent.length;
             // Send the patch data to ChatGPT for review
-            if (numberOfCharacters < 4096) {
+            console.log('baseContent, patch', utils_1.baseContent, patch);
+            if (numberOfCharacters < fileSizeLimit) {
                 try {
                     const { data: gptResponse } = await axios_1.default.post('https://api.openai.com/v1/chat/completions', {
-                        model: 'gpt-3.5-turbo',
+                        model: 'gpt-4',
                         messages: [
                             {
                                 role: 'user',
-                                content: `Keep in mind that you are here to help a lead developper revieweing a pull request from a developer. You don't have to provide comments if the code is fine. Review the following code and provide brief comments :\n${patch}`
+                                content: `${utils_1.baseContent}${patch}`
                             }
                         ]
                     }, {
@@ -33401,16 +33404,18 @@ async function run() {
                         }
                     });
                     const review = gptResponse.choices[0].message.content;
-                    // Comment PR with GPT response
-                    await octokit.rest.pulls.createReviewComment({
-                        owner,
-                        repo,
-                        pull_number: number,
-                        body: review,
-                        path: filePath,
-                        commit_id: commitId,
-                        position: 1
-                    });
+                    if (review !== 'No comment') {
+                        // Comment PR with GPT response
+                        await octokit.rest.pulls.createReviewComment({
+                            owner,
+                            repo,
+                            pull_number: number,
+                            body: review,
+                            path: filePath,
+                            commit_id: commitId,
+                            position: 1
+                        });
+                    }
                 }
                 catch (err) {
                     console.log(err);
@@ -33428,6 +33433,21 @@ async function run() {
     }
 }
 exports.run = run;
+
+
+/***/ }),
+
+/***/ 1314:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.baseContent = void 0;
+exports.baseContent = `Keep in mind that you are here to help a lead developper revieweing a pull request from a developer. You will receive a GitHub patch file content.
+Answer with the sentence : "No comment" unless there is valuable information to share. 
+Pay attention to syntax, improvment, logic, performance, readability, maintainability, scalability, reusability, complexity, best practice, convention. 
+Do NOT explain what the code is doing. Be relevant. Review the following code and provide comments :\n`;
 
 
 /***/ }),
