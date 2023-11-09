@@ -1,6 +1,9 @@
 name: 'GPT PR Reviewer'
 description: 'Review PR and suggest comments, improvments, using ChatGPT'
 author: 'Galadrim'
+branding:
+  icon: 'aperture'
+  color: 'green'
 
 # Define your inputs here.
 inputs:
