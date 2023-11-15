@@ -33389,7 +33389,6 @@ async function run() {
             const numberOfCharacters = patch?.length || 0;
             const fileSizeLimit = CONTEXT_LENGTH - utils_1.baseContent.length;
             // Send the patch data to ChatGPT for review
-            console.log('baseContent, patch', utils_1.baseContent, patch);
             if (numberOfCharacters < fileSizeLimit) {
                 try {
                     const { data: gptResponse } = await axios_1.default.post('https://api.openai.com/v1/chat/completions', {
@@ -33406,6 +33405,7 @@ async function run() {
                         }
                     });
                     const review = gptResponse.choices[0].message.content;
+                    console.log(review);
                     if (!review.includes('No comment')) {
                         // List comments on the pull request
                         const { data: comments } = await octokit.rest.pulls.listReviewComments({
