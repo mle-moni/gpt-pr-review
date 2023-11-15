@@ -33355,6 +33355,8 @@ const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const axios_1 = __importDefault(__nccwpck_require__(8757));
 const utils_1 = __nccwpck_require__(1314);
+const CONTEXT_LENGTH = 128000;
+const COMMENT_POSITION = 1;
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
@@ -33385,13 +33387,13 @@ async function run() {
             const filePath = file.filename;
             const patch = file.patch;
             const numberOfCharacters = patch?.length || 0;
-            const fileSizeLimit = 8192 - utils_1.baseContent.length;
+            const fileSizeLimit = CONTEXT_LENGTH - utils_1.baseContent.length;
             // Send the patch data to ChatGPT for review
             console.log('baseContent, patch', utils_1.baseContent, patch);
             if (numberOfCharacters < fileSizeLimit) {
                 try {
                     const { data: gptResponse } = await axios_1.default.post('https://api.openai.com/v1/chat/completions', {
-                        model: 'gpt-4',
+                        model: 'gpt-4-1106-preview',
                         messages: [
                             {
                                 role: 'user',
@@ -33404,7 +33406,24 @@ async function run() {
                         }
                     });
                     const review = gptResponse.choices[0].message.content;
-                    if (review !== 'No comment') {
+                    if (!review.includes('No comment')) {
+                        // List comments on the pull request
+                        const { data: comments } = await octokit.rest.pulls.listReviewComments({
+                            owner,
+                            repo,
+                            pull_number: number
+                        });
+                        // Find and delete the comment at the specific position
+                        for (const comment of comments) {
+                            if (comment.position === COMMENT_POSITION) {
+                                await octokit.rest.pulls.deleteReviewComment({
+                                    owner,
+                                    repo,
+                                    comment_id: comment.id
+                                });
+                                console.log(`Deleted comment at position ${COMMENT_POSITION}`);
+                            }
+                        }
                         // Comment PR with GPT response
                         await octokit.rest.pulls.createReviewComment({
                             owner,
@@ -33413,7 +33432,7 @@ async function run() {
                             body: review,
                             path: filePath,
                             commit_id: commitId,
-                            position: 1
+                            position: COMMENT_POSITION
                         });
                     }
                 }
@@ -33444,10 +33463,13 @@ exports.run = run;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.baseContent = void 0;
-exports.baseContent = `You will receive a GitHub patch file content. Keep in mind that you are here to help a lead developer revieweing a pull request from a developer.
-Answer with the sentence : "No comment" unless there is valuable information to share. 
-Pay attention to syntax, improvment, logic, performance, readability, maintainability, scalability, reusability, complexity, best practice, convention. 
-Do NOT explain what the code is doing. Be relevant. Review the following code and provide comments :\n`;
+exports.baseContent = `You will receive a GitHub patch file content. Keep in mind that you are here to help a lead developer reviewing a pull request from a developer.
+Rate the code from 1 to 10. 1 being the worst and 10 being the best. You can assume that the code is not breaking anything.
+Answer with the sentence : "No comment" if the rate is equal or above 9, or if there is no significant modification.
+Do not comment with compliment about the code. Keep your answers very brief. 
+Check the code syntax, improvment, logic, performance, readability, maintainability, reusability, complexity, best practice, convention.
+Provide snippet to explain the possible improvment.
+Do NOT explain what the code is doing. Answer with a numbered list : \n`;
 
 
 /***/ }),
