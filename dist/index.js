@@ -33383,6 +33383,23 @@ async function run() {
             repo,
             pull_number: number
         });
+        // List comments on the pull request
+        const { data: comments } = await octokit.rest.pulls.listReviewComments({
+            owner,
+            repo,
+            pull_number: number
+        });
+        // Find and delete the comment at the specific position
+        for (const comment of comments) {
+            if (comment.position === COMMENT_POSITION) {
+                await octokit.rest.pulls.deleteReviewComment({
+                    owner,
+                    repo,
+                    comment_id: comment.id
+                });
+                console.log(`Deleted comment at position ${COMMENT_POSITION}`);
+            }
+        }
         for (const file of files) {
             const filePath = file.filename;
             const patch = file.patch;
@@ -33407,23 +33424,6 @@ async function run() {
                     const review = gptResponse.choices[0].message.content;
                     console.log(review);
                     if (!review.includes('No comment')) {
-                        // List comments on the pull request
-                        const { data: comments } = await octokit.rest.pulls.listReviewComments({
-                            owner,
-                            repo,
-                            pull_number: number
-                        });
-                        // Find and delete the comment at the specific position
-                        for (const comment of comments) {
-                            if (comment.position === COMMENT_POSITION) {
-                                await octokit.rest.pulls.deleteReviewComment({
-                                    owner,
-                                    repo,
-                                    comment_id: comment.id
-                                });
-                                console.log(`Deleted comment at position ${COMMENT_POSITION}`);
-                            }
-                        }
                         // Comment PR with GPT response
                         await octokit.rest.pulls.createReviewComment({
                             owner,
