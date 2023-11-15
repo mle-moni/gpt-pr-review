@@ -4,6 +4,8 @@ import axios from 'axios'
 import { error } from 'console'
 import { baseContent } from './utils'
 
+const CONTEXT_LENGTH = 128000
+const COMMENT_POSITION = 1
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
@@ -40,7 +42,7 @@ export async function run(): Promise<void> {
       const filePath = file.filename
       const patch = file.patch
       const numberOfCharacters = patch?.length || 0
-      const fileSizeLimit = 8192 - baseContent.length
+      const fileSizeLimit = CONTEXT_LENGTH - baseContent.length
       // Send the patch data to ChatGPT for review
       console.log('baseContent, patch', baseContent, patch)
       if (numberOfCharacters < fileSizeLimit) {
@@ -48,7 +50,7 @@ export async function run(): Promise<void> {
           const { data: gptResponse } = await axios.post(
             'https://api.openai.com/v1/chat/completions',
             {
-              model: 'gpt-4',
+              model: 'gpt-4-1106-preview',
               messages: [
                 {
                   role: 'user',
@@ -64,7 +66,27 @@ export async function run(): Promise<void> {
           )
           const review = gptResponse.choices[0].message.content
 
-          if (review !== 'No comment') {
+          if (!review.includes('No comment')) {
+            // List comments on the pull request
+            const { data: comments } =
+              await octokit.rest.pulls.listReviewComments({
+                owner,
+                repo,
+                pull_number: number
+              })
+
+            // Find and delete the comment at the specific position
+            for (const comment of comments) {
+              if (comment.position === COMMENT_POSITION) {
+                await octokit.rest.pulls.deleteReviewComment({
+                  owner,
+                  repo,
+                  comment_id: comment.id
+                })
+                console.log(`Deleted comment at position ${COMMENT_POSITION}`)
+              }
+            }
+
             // Comment PR with GPT response
             await octokit.rest.pulls.createReviewComment({
               owner,
@@ -73,7 +95,7 @@ export async function run(): Promise<void> {
               body: review,
               path: filePath,
               commit_id: commitId,
-              position: 1
+              position: COMMENT_POSITION
             })
           }
         } catch (err) {
