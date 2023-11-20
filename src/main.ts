@@ -1,16 +1,34 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import axios from 'axios'
-import { error } from 'console'
 import { baseContent } from './utils'
 
 const CONTEXT_LENGTH = 128000
 const COMMENT_POSITION = 1
+
+const RETURN_CODES = {
+  SUCCESS: 0,
+  FAILURE: 1
+} as const
+
+const handleError = (
+  error: unknown,
+  core: { setFailed: (msg: string) => void }
+): number => {
+  const errorMessage =
+    error instanceof Error ? error.message : 'Unknown error :c'
+
+  core.setFailed(errorMessage)
+  console.error(errorMessage)
+
+  return RETURN_CODES.FAILURE
+}
+
 /**
  * The main function for the action.
- * @returns {Promise<void>} Resolves when the action is complete.
+ * @returns {Promise<number>} Resolves when the action is complete.
  */
-export async function run(): Promise<void> {
+export async function run(): Promise<number> {
   try {
     // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
     core.debug(`Starting action...`)
@@ -97,8 +115,8 @@ export async function run(): Promise<void> {
               position: COMMENT_POSITION
             })
           }
-        } catch (err) {
-          console.log(err)
+        } catch (error) {
+          return handleError(error, core)
         }
       } else {
         console.log('File is too large.')
@@ -106,6 +124,8 @@ export async function run(): Promise<void> {
     }
   } catch (error) {
     // Fail the workflow run if an error occurs
-    if (error instanceof Error) core.setFailed(error.message)
+    return handleError(error, core)
   }
+
+  return RETURN_CODES.SUCCESS
 }
